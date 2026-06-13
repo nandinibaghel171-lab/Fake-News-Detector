@@ -5,25 +5,19 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report
 import pickle
 
-# Fake news load karo
-fake_df = pd.read_csv('data/fake.csv')
-fake_df['label'] = 0  # fake = 0
+# Indian dataset load karo
+df = pd.read_csv('data/IFND.csv', encoding='latin-1')
 
-# Real news load karo
-real_df = pd.read_csv('data/True.csv')
-real_df['label'] = 1  # real = 1
+# Clean karo
+df = df[['Statement', 'Label']]
+df = df.dropna()
 
-# Dono combine karo
-df = pd.concat([fake_df, real_df], ignore_index=True)
-print("Total data:", df.shape)
-
-# Text clean karo
-df['title'] = df['title'].fillna('').astype(str)
-df['text'] = df['text'].fillna('').astype(str)
-df['content'] = df['title'] + ' ' + df['text']
+# Label convert karo — TRUE=1, Fake=0
+df['label'] = df['Label'].apply(
+    lambda x: 1 if x == 'TRUE' else 0)
 
 # Features aur target
-X = df['content']
+X = df['Statement'].astype(str)
 y = df['label']
 
 # Train test split
@@ -31,8 +25,8 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42)
 
 # Text ko numbers mein convert karo
-vectorizer = TfidfVectorizer(max_features=5000, 
-                              stop_words='english')
+vectorizer = TfidfVectorizer(
+    max_features=5000, stop_words='english')
 X_train_vec = vectorizer.fit_transform(X_train)
 X_test_vec = vectorizer.transform(X_test)
 
@@ -48,4 +42,4 @@ print(classification_report(y_test, y_pred))
 # Model save karo
 pickle.dump(model, open('model.pkl', 'wb'))
 pickle.dump(vectorizer, open('vectorizer.pkl', 'wb'))
-print("Model saved successfully!")
+print("Indian Model saved successfully!")
